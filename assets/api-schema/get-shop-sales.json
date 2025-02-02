@@ -1,0 +1,94 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Get Shop Sales Analysis API",
+    "version": "1.0.0",
+    "description": "Analyze and fetch shop sales data based on market keywords, date range, shop codes, and date type."
+  },
+  "paths": {
+    "/get-shop-trend-sales": {
+      "post": {
+        "summary": "Fetch shop trend data by shop codes",
+        "description": "Analyze and fetch shop sales data based on market keywords, date range, shop codes, and date type.",
+        "operationId": "GetShopTrendSales",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "data": {
+                    "type": "object",
+                    "properties": {
+                      "date_end": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "End date for trend analysis (YYYY-MM-DD or YYYY-MM)."
+                      },
+                      "date_start": {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Start date for trend analysis (YYYY-MM-DD or YYYY-MM)."
+                      },
+                      "date_type": {
+                        "type": "string",
+                        "enum": ["day", "month"],
+                        "description": "Granularity of the date range.",
+                        "default": "day"
+                      },
+                      "market": {
+                        "type": "string",
+                        "description": "データを取得するマーケット。許容値は 'rakuten', 'yahoo', 'amazon'。デフォルト値は 'rakuten'。",
+                        "example": "rakuten",
+                        "enum": ["rakuten", "yahoo", "amazon"]
+                      },
+                      "platform_shop_codes": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "List of shop codes from the specified market."
+                      },
+                      "request_page": {
+                        "type": "string",
+                        "enum": ["trend", "compare"],
+                        "description": "Page type for the request.",
+                        "default": "trend"
+                      }
+                    },
+                    "required": [
+                      "date_end",
+                      "date_start",
+                      "date_type",
+                      "market",
+                      "platform_shop_codes"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "取得されたショップ売り上げ",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "string",
+                      "description": "検索結果"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
