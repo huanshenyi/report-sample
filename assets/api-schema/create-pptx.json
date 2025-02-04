@@ -1,0 +1,56 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Create Pptx API",
+    "version": "1.0.0",
+    "description": "Generate a PowerPoint presentation based on given topic and content."
+  },
+  "paths": {
+    "/create-pptx": {
+      "post": {
+        "summary": "Create a PowerPoint presentation",
+        "description": "Generate a PowerPoint presentation using the provided topic and content.",
+        "operationId": "CreatePptx",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "topic": {
+                    "type": "string",
+                    "description": "The title of the presentation."
+                  },
+                  "content": {
+                    "type": "string",
+                    "description": "The content for the slides, separated by double newlines for each slide."
+                  }
+                },
+                "required": ["topic", "content"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Generated PowerPoint presentation URL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "signed_url": {
+                      "type": "string",
+                      "description": "The URL to download the generated PowerPoint presentation."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
