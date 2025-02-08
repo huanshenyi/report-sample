@@ -9,11 +9,17 @@ export const handler = async (event: AgentInput): Promise<AgentOutput> => {
   try {
     let topic = "";
     let content = "";
+    let agenda = "";
+    let backgroundColor = "f0ffff";
     for (const prop of props) {
       if (prop.name === "topic") {
         topic = prop.value;
+      } else if (prop.name === "agenda") {
+        agenda = prop.value;
       } else if (prop.name === "content") {
         content = prop.value.trim();
+      } else if (prop.name === "backgroundColor") {
+        backgroundColor = prop.value;
       }
     }
 
@@ -21,14 +27,22 @@ export const handler = async (event: AgentInput): Promise<AgentOutput> => {
 
     // プレゼンテーション作成
     const pptx = new PptxGenJS();
+    pptx.defineLayout({ name: "WIDESCREEN", width: 13.333, height: 7.5 });
+    pptx.layout = "WIDESCREEN";
+
+    const defaultTextStyle = {
+      fontFace: "Yu Gothic",
+      color: "363636",
+      align: "left" as const,
+    };
 
     // タイトルスライド
     let slide = pptx.addSlide();
-    slide.background = { color: "F0F0F0" };
+    slide.background = { color: backgroundColor };
     slide.addText(topic, {
       x: 0,
-      y: "40%", // スライドの40%の高さに配置
-      w: "100%", // 幅いっぱいにして中央揃え
+      y: "35%",
+      w: "100%",
       fontSize: 32,
       bold: true,
       align: "center", // 中央揃え
@@ -41,6 +55,56 @@ export const handler = async (event: AgentInput): Promise<AgentOutput> => {
       align: "center",
     });
 
+    if (agenda) {
+      let slide = pptx.addSlide();
+      slide.background = { color: backgroundColor };
+
+      // CONTENTSヘッダー
+      slide.addShape(pptx.ShapeType.rect, {
+        x: 0,
+        y: 0,
+        w: "30%", // ヘッダーの幅を調整
+        h: 0.8, // ヘッダーの高さを調整
+        fill: { color: "4472C4" },
+      });
+
+      slide.addText("Agenda", {
+        x: 0.5,
+        y: 0.5,
+        fontSize: 32,
+        bold: true,
+        ...defaultTextStyle,
+      });
+
+      // 下線
+      slide.addShape(pptx.ShapeType.line, {
+        x: 0,
+        y: 0.8,
+        w: "100%",
+        h: 0,
+        line: { color: "000000", width: 1 },
+      });
+
+      // コンテンツ項目
+      const agendaItems = agenda.split(",").map((item, index) => ({
+        text: `${index + 1}. ${item.trim()}`, // 番号を追加
+        options: {
+          fontSize: 24,
+          color: "000000",
+          bold: false,
+          breakLine: true,
+          spacing: { line: 1.5 }, // 行間を広げる
+        },
+      }));
+
+      slide.addText(agendaItems, {
+        x: 0.3,
+        y: 1.6,
+        w: "90%",
+        ...defaultTextStyle,
+      });
+    }
+
     // コンテンツスライド
     slidesContent.forEach((slideContent) => {
       const lines = slideContent.split("\n");
@@ -51,6 +115,7 @@ export const handler = async (event: AgentInput): Promise<AgentOutput> => {
         .join("\n");
 
       let slide = pptx.addSlide();
+      slide.background = { color: backgroundColor };
       slide.addText(titleText, { x: 0.5, y: 0.5, fontSize: 24, bold: true });
       slide.addText(bodyText, { x: 0.5, y: 1.5, fontSize: 16 });
     });

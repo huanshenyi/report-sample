@@ -22,12 +22,20 @@
                     "type": "string",
                     "description": "The title of the presentation."
                   },
+                  "agenda": {
+                    "type": "string",
+                    "description": "The slides agenda"
+                  },
                   "content": {
                     "type": "string",
                     "description": "The content for the slides, separated by double newlines for each slide."
+                  },
+                  "backgroundColor": {
+                    "type": "string",
+                    "description": "The background color for the slides."
                   }
                 },
-                "required": ["topic", "content"]
+                "required": ["topic", "agenda", "content"]
               }
             }
           }

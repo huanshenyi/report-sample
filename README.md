@@ -23,3 +23,8 @@ The `cdk.json` file tells the CDK Toolkit how to execute your app.
 export DEV_AWS_ACCOUNT_ID=<AWS アカウント ID>
 npx cdk deploy -c environment=dev dev-report-sample-report-sample
 ```
+
+2#:@hikaritv
+
+ひかり TV ショッピング Yahoo!店
+今日は2025年2月08日、Yahooの2#:@hikaritvショップの先週と先々週の売り上げ比較するレポート欲しい、うまく他のエージェントと調整して作って欲しい

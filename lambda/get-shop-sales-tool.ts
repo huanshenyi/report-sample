@@ -137,8 +137,7 @@ const getShopTrendSalesData = async (
   // biome-ignore lint/suspicious/noExplicitAny: <explanation>
 ): Promise<any> => {
   // const cookie = await getCookie();
-  const cookie =
-    "_gcl_au=1.1.331740644.1734013188; _ga=GA1.1.923607719.1734013188; _fbp=fb.1.1734013187823.922463773599298269; _yjsu_yjad=1736163133.0ef40b0e-d1f3-4d6e-a280-65b956bd4996; _uetvid=8f98c0404f4611ef9516996faf3b5ca0|1lsp9cy|1736936905969|2|1|bat.bing.com/p/insights/c/o; _ga_JS6NHF3GDB=GS1.1.1736936902.4.1.1736937025.0.0.0; _clck=250bca%7C2%7Cft3%7C0%7C1807; _ga=GA1.3.923607719.1734013188; _gid=GA1.3.1327503981.1738456516; jp_chatplus_vtoken=ikoj0g7oqyf4mqoi3gf3ba017a8f; visitor_id978693=569737591; visitor_id978693-hash=049afe75135d05183e15fb8a623306c88c6b7c3a9aaebf9a334aa638f34ef63013b877918ba603d478fd4d475d3f2fe6dd6ad50c; PHPSESSID=48l3mjdocp54d6a46m59vshkf0; _gat_UA-54884083-14=1; _clsk=jtzybg%7C1738456649310%7C12%7C1%7Co.clarity.ms%2Fcollect; _ga_QPVNXETRF1=GS1.1.1738456482.11.1.1738456649.47.0.0";
+  const cookie = "";
   const url = "https://ec-test5.nint.jp/api/shop/get-shop-trend-sales";
   const payload = {
     data: {

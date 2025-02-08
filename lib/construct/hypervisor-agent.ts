@@ -8,8 +8,6 @@ import {
   Role,
   ServicePrincipal,
 } from "aws-cdk-lib/aws-iam";
-import { Runtime } from "aws-cdk-lib/aws-lambda";
-import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import {
   BlockPublicAccess,
   Bucket,
@@ -27,7 +25,7 @@ export interface AgentConstructProps extends cdk.StackProps {
   knowledgeBaseId: string;
 }
 
-export class MakeReportAgent extends Construct {
+export class HypervisorAgent extends Construct {
   public readonly agents: AgentType[];
 
   constructor(scope: Construct, id: string, props: AgentConstructProps) {
@@ -49,38 +47,13 @@ export class MakeReportAgent extends Construct {
       destinationKeyPrefix: "api-schema",
     });
 
-    // 成果物配置するs3
-    const outputBucket = new Bucket(this, "OutputBucket", {
-      encryption: BucketEncryption.S3_MANAGED,
-      removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteObjects: true,
-      enforceSSL: true,
-      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
-    });
-
     /*
      * Action Group Lambda
      */
 
-    // トレンドデータ取得するAgentLambda
-    const createPptxTool = new NodejsFunction(this, "CreatePptxTool", {
-      runtime: Runtime.NODEJS_22_X,
-      entry: "./lambda/create-pptx-tool.ts",
-      timeout: Duration.seconds(300),
-      memorySize: 512,
-      environment: {
-        ENV: props.envName,
-        PROJECT_NAME: props.projectName,
-        S3_BUCKET_NAME: outputBucket.bucketName,
-      },
-    });
-    outputBucket.grantReadWrite(createPptxTool);
-
-    createPptxTool.grantInvoke(new ServicePrincipal("bedrock.amazonaws.com"));
-
     // Agent
     const bedrockAgentRole = new Role(this, "MakeReportBedrockAgentRole", {
-      roleName: "AmazonBedrockExecutionRoleForAgents_CreateEngine",
+      roleName: "AmazonBedrockExecutionRoleForAgents_HypervisorEngine",
       assumedBy: new ServicePrincipal("bedrock.amazonaws.com"),
       inlinePolicies: {
         BedrockAgentS3BucketPolicy: new PolicyDocument({
@@ -104,38 +77,45 @@ export class MakeReportAgent extends Construct {
       },
     });
 
-    const makeReportAgent = new CfnAgent(this, "MakeReportAgent", {
-      agentName: "MakeReportAgent",
+    const hypervisorAgent = new CfnAgent(this, "HypervisorAgent", {
+      agentName: "HypervisorAgent",
       knowledgeBases: [], // TODO: いい感じに実装する
       actionGroups: [
         {
-          actionGroupName: "createPptxTool",
-          actionGroupExecutor: {
-            lambda: createPptxTool.functionArn,
-          },
-          apiSchema: {
-            s3: {
-              s3BucketName: schema.deployedBucket.bucketName,
-              s3ObjectKey: "api-schema/create-pptx.json",
-            },
-          },
-          description: "Create pptx",
+          actionGroupName: "UserInput",
+          parentActionGroupSignature: "AMAZON.UserInput",
         },
       ],
       agentResourceRoleArn: bedrockAgentRole.roleArn,
       idleSessionTtlInSeconds: 3600,
       autoPrepare: true,
-      description: "ツール使ってで日本語の解説資料、レポートなどを作成します",
+      description:
+        "与えられたトピックについて、ツール使ってで日本語の解説資料を作成します",
       foundationModel: "anthropic.claude-3-5-sonnet-20240620-v1:0",
-      instruction: `あなたはレポート作成の専門家。以下の厳密な指示に従って対応します:
-【対応方法】
-1. ppt、パワポ、レポートの作成依頼された際に:
-   - createPptxToolを使用
+      instruction: `あなたはAIAgent活用の専門家として、複数のAIAgentを連携させ、ユーザーのリクエストに最適なレポートを提供します。
+## 基本動作の流れ
+1. ユーザーの入力を解析し、必要なデータと要件を特定
+2. 適切なAIAgentを選択し、必要なパラメータを設定
+3. データ収集とレポート作成を順次実行
+4. 結果をユーザーに提供
+
+## 利用可能なAIAgents
+
+名前: SalesSurveyAgent
+- 店舗、ショップのセールス情報を取得できます。
+   - 必須パラメータを以下の形式で含める:
+     * date_end: [説明: データ抽出の終了日 (形式: YYYY-MM or YYYY-MM-DD)]
+     * date_start: [説明: データ抽出の開始日 (形式: YYYY-MM or YYYY-MM-DD)]
+     * market: [説明: データを分析する対象市場。許容値はrakuten, yahoo, amazon。デフォルト値はrakuten。ユーザーの入力値が楽天の場合、rakutenとします。]
+     * date_type: [説明: データ抽出のタイプ。許容値はday, month。デフォルト値はday。dayの場合、date_endとdate_startはYYYY-MM-DD形式になる]
+     * platform_shop_codes: [説明: 対象ショップのcodesが入るリスト、必ず複数の中身が必要なわけではない。]
+
+名前: MakeReportAgent
+- レポート作れるAIAgentです、ダウロードリンクも提供してくれます。
    - 必須パラメータを以下の形式で含める:
      * topic: [説明: スライドのメイントピック]
      * agenda: [説明: スライド1, 2, 3などのタイトルの集合体(形式:スライド1のタイトル,スライド2のタイトル,スライド3のタイトル)]
-     * content: [説明: スライドに含める内容	(形式: スライド1のタイトル
-スライド1の内容
+     * content: [説明: スライドに含める内容	(形式: スライド1のタイトルスライド1の内容
 
 スライド2のタイトル
 スライド2の内容
@@ -144,14 +124,18 @@ export class MakeReportAgent extends Construct {
 スライド3の内容)]
     * backgroundColor: [説明: スライドのbackgroundカラーコード, F0FFFF, fffaf0, ffffffなど、適当に淡い色を使う]
 
+使用サンプル
+ユーザー入力: 今日は2025年2月08日、Yahooの2#:@hikaritvショップの先週と先々週の売り上げ比較するレポート欲しい
+実行方法: まず、SalesSurveyAgent使って、2月3日から7のデータと、1月27、31までの取得、それからMakeReportAgentにデータを渡して、レポート作ってもらう
+
 DO NOT TALK JUST GENERATE ANSWER
       `,
     });
-    const makeReportAgentAlias = new CfnAgentAlias(
+    const hypervisorAgentAlias = new CfnAgentAlias(
       this,
-      "MakeReportAgentAlias",
+      "HypervisorAgentAlias",
       {
-        agentId: makeReportAgent.attrAgentId,
+        agentId: hypervisorAgent.attrAgentId,
         agentAliasName: "v1", // agent 修正された場合は都度更新 + 1
       }
     );
@@ -159,8 +143,8 @@ DO NOT TALK JUST GENERATE ANSWER
     this.agents = [
       {
         displayName: "CreateEngine",
-        agentId: makeReportAgent.attrAgentId,
-        aliasId: makeReportAgentAlias.attrAgentAliasId,
+        agentId: hypervisorAgent.attrAgentId,
+        aliasId: hypervisorAgentAlias.attrAgentAliasId,
       },
     ];
   }

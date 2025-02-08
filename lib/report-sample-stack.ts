@@ -4,6 +4,7 @@ import { Construct } from "constructs";
 import type { Agent as AgentType } from "./construct/type";
 import { SalesSurveyAgent } from "./construct/sales-survey-agent";
 import { MakeReportAgent } from "./construct/make-report-agent";
+import { HypervisorAgent } from "./construct/hypervisor-agent";
 
 interface AgentStackProps extends StackProps {
   envName: "dev" | "stg" | "prd";
@@ -35,7 +36,20 @@ export class ReportSampleStack extends cdk.Stack {
       knowledgeBaseId: props.ragKnowledgeBaseId,
     });
 
-    this.agents = salesSurveyAgent.agents;
-    this.agents.push(...makeReportAgent.agents);
+    /*
+     * ハイパーバイザーエージェント
+     * TODO: ちゃんとCDKで全部実装する
+     */
+    const hypervisorAgent = new HypervisorAgent(this, "HypervisorAgent", {
+      envName: props.envName,
+      projectName: props.projectName,
+      knowledgeBaseId: props.ragKnowledgeBaseId,
+    });
+
+    this.agents = [
+      ...salesSurveyAgent.agents,
+      ...makeReportAgent.agents,
+      ...hypervisorAgent.agents,
+    ];
   }
 }
