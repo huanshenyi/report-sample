@@ -58,6 +58,21 @@ export class MakeReportAgent extends Construct {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
     });
 
+    // 素材を配置するs3
+    const materialBucket = new Bucket(this, "MaterialBucket", {
+      encryption: BucketEncryption.S3_MANAGED,
+      removalPolicy: RemovalPolicy.DESTROY,
+      autoDeleteObjects: true,
+      enforceSSL: true,
+      blockPublicAccess: BlockPublicAccess.BLOCK_ALL,
+    });
+
+    new BucketDeployment(this, "MakeReportMaterialBucket", {
+      sources: [Source.asset("assets/material")],
+      destinationBucket: materialBucket,
+      destinationKeyPrefix: "material",
+    });
+
     /*
      * Action Group Lambda
      */
@@ -72,9 +87,11 @@ export class MakeReportAgent extends Construct {
         ENV: props.envName,
         PROJECT_NAME: props.projectName,
         S3_BUCKET_NAME: outputBucket.bucketName,
+        MATERIAL_BUCKET_NAME: materialBucket.bucketName,
       },
     });
     outputBucket.grantReadWrite(createPptxTool);
+    materialBucket.grantReadWrite(createPptxTool)
 
     createPptxTool.grantInvoke(new ServicePrincipal("bedrock.amazonaws.com"));
 
@@ -142,7 +159,7 @@ export class MakeReportAgent extends Construct {
 
 スライド3のタイトル
 スライド3の内容)]
-    * backgroundColor: [説明: スライドのbackgroundカラーコード, F0FFFF, fffaf0, ffffffなど、適当に淡い色を使う]
+    * backgroundColor: [説明: スライドのbackgroundカラーコード, F0FFFF, FFFaF0, FFFFFFなど、適当に淡い色を使う]
 
 DO NOT TALK JUST GENERATE ANSWER
       `,
