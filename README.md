@@ -28,3 +28,7 @@ npx cdk deploy -c environment=dev dev-report-sample-report-sample
 
 ひかり TV ショッピング Yahoo!店
 今日は2025年2月08日、Yahooの2#:@hikaritvショップの先週と先々週の売り上げ比較するレポート欲しい、うまく他のエージェントと調整して作って欲しい
+
+今日は2025年2月、これからエアコンの売れ行きどうなる？
+breadth = 4 生成される質問の数、ユーザーの元の質問から生成
+depth = 2
