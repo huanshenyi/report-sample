@@ -6,6 +6,7 @@ import { SalesSurveyAgent } from "./construct/sales-survey-agent";
 import { MakeReportAgent } from "./construct/make-report-agent";
 import { HypervisorAgent } from "./construct/hypervisor-agent";
 import { SearchWebAgent } from "./construct/search-web-agent";
+import { DeepResearchAgent } from "./construct/deep-research-agent";
 
 interface AgentStackProps extends StackProps {
   envName: "dev" | "stg" | "prd";
@@ -22,6 +23,12 @@ export class ReportSampleStack extends cdk.Stack {
 
   constructor(scope: Construct, id: string, props: AgentStackProps) {
     super(scope, id, props);
+    // Deep Research
+    const deepResearchAgent = new DeepResearchAgent(this, "DeepResearchAgent", {
+      envName: props.envName,
+      projectName: props.projectName,
+      knowledgeBaseId: props.ragKnowledgeBaseId,
+    });
 
     // webから情報取得
     const searchWebAgent = new SearchWebAgent(this, "SearchWebAgent", {
@@ -55,6 +62,7 @@ export class ReportSampleStack extends cdk.Stack {
     });
 
     this.agents = [
+      ...deepResearchAgent.agents,
       ...salesSurveyAgent.agents,
       ...makeReportAgent.agents,
       ...hypervisorAgent.agents,

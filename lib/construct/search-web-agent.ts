@@ -159,7 +159,7 @@ export class SearchWebAgent extends Construct {
 - 従来の常識だけでなく、新しい技術や一般的な見方に反する意見も検討してください。
 - 高度な推測や予測を行うことができますが、その場合はその旨を明確に示してください。
 【ツールの使用方法】
-ユーザー入力をSERPクエリ変換してqueryとして利用する
+ユーザー入力をSERPクエリ変換してqueryとして利用する、ツールは二つ、バランスよく使う。
 1. TavilyTool:
    * query: [説明: 検索したいキーワードまたはフレーズ.]
 2. FirecrawlTool
