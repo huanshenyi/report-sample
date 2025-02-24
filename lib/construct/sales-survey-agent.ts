@@ -43,7 +43,7 @@ export class SalesSurveyAgent extends Construct {
     });
 
     // schema を s3 に配置
-    const schema = new BucketDeployment(this, "ApiSchemaBucket", {
+    const schema = new BucketDeployment(this, "SalesSurveyApiSchemaBucket", {
       sources: [Source.asset("assets/api-schema")],
       destinationBucket: s3Bucket,
       destinationKeyPrefix: "api-schema",

@@ -1,0 +1,53 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Tavily Search API",
+    "version": "1.0.0",
+    "description": "Tavilyを使用したWeb検索APIです。クエリを受け取り、関連する検索結果を返却します。"
+  },
+  "paths": {
+    "/search-tavily": {
+      "post": {
+        "summary": "Tavilyでウェブ検索を実行",
+        "description": "指定されたクエリに基づいてTavilyで検索を実行し、上位5件の検索結果を返却します。",
+        "operationId": "searchTavily",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "検索したいキーワードまたはフレーズ.",
+                    "example": "latest news about AI development"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "tavilyからの検索結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "string",
+                      "description": "XML形式でラップされたTavilyの検索結果（JSON文字列）",
+                      "example": "<tavily_data>{\"results\":[...], \"query\":\"search term\"}</tavily_data>"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -36,6 +36,10 @@ export type AgentOutput = {
   };
 };
 
+export interface SearchResult {
+  [key: string]: any;
+}
+
 export type BraveSearchResult = {
   title: string;
   url: string;

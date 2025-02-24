@@ -1,0 +1,53 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "Firecrawl Search API",
+    "version": "1.0.0",
+    "description": "Firecrawlを使用したWeb検索APIです。クエリを受け取り、関連する検索結果を返却します。"
+  },
+  "paths": {
+    "/search-firecrawl": {
+      "post": {
+        "summary": "firecrawl使ってでウェブ検索を実行",
+        "description": "指定されたクエリに基づいてfirecrawlで検索を実行し、上位5件の検索結果を返却します。",
+        "operationId": "searchFirecrawl",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "query": {
+                    "type": "string",
+                    "description": "検索したいキーワードまたはフレーズ.",
+                    "example": "latest news about AI development"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "firecrawlからの検索結果",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "string",
+                      "description": "XML形式でラップされたFirecrawlの検索結果（JSON文字列）",
+                      "example": "<firecrawl_data>...</firecrawl_data>"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
