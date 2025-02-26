@@ -1,0 +1,73 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+      "title": "Deep Research Orchestration API",
+      "version": "1.0.0",
+      "description": "Orchestrates a multi-step Deep Research workflow between DeepResearchAgent and SearchWebAgent"
+    },
+    "paths": {
+      "/deep-research-orchestration": {
+        "post": {
+          "summary": "Conduct deep research on a topic",
+          "description": "Coordinates DeepResearchAgent to generate queries and SearchWebAgent to perform searches",
+          "operationId": "DeepResearchOrchestration",
+          "requestBody": {
+            "required": true,
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "query": {
+                      "type": "string",
+                      "description": "The research query or topic to investigate"
+                    },
+                    "max_iterations": {
+                      "type": "integer",
+                      "description": "Maximum number of research iterations to perform",
+                      "default": 3
+                    }
+                  },
+                  "required": ["query"]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Research results",
+              "content": {
+                "application/json": {
+                  "schema": {
+                    "type": "object",
+                    "properties": {
+                      "results": {
+                        "type": "object",
+                        "properties": {
+                          "original_query": {
+                            "type": "string"
+                          },
+                          "summary": {
+                            "type": "string"
+                          },
+                          "research_details": {
+                            "type": "array",
+                            "items": {
+                              "type": "object"
+                            }
+                          },
+                          "conclusion": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }

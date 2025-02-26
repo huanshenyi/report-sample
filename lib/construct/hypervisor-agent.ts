@@ -1,6 +1,7 @@
 import type * as cdk from "aws-cdk-lib";
 import { Duration, RemovalPolicy } from "aws-cdk-lib";
 import { CfnAgent, CfnAgentAlias } from "aws-cdk-lib/aws-bedrock";
+import { Runtime } from "aws-cdk-lib/aws-lambda";
 import {
   Effect,
   PolicyDocument,
@@ -16,6 +17,7 @@ import {
 import { BucketDeployment, Source } from "aws-cdk-lib/aws-s3-deployment";
 import { Construct } from "constructs";
 import type { Agent as AgentType } from "./type";
+import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 // すでにあるknowledgeBaseをimport
 // import { RagKnowledgeBase } from './rag-knowledge-base';
 
@@ -50,6 +52,31 @@ export class HypervisorAgent extends Construct {
     /*
      * Action Group Lambda
      */
+    const deepResearchOrchestrationTool = new NodejsFunction(
+      this,
+      "DeepResearchOrchestrationTool",
+      {
+        runtime: Runtime.NODEJS_22_X,
+        entry: "./lambda/deep-research-orchestration-tool.ts", // Implement this file with the logic above
+        timeout: Duration.seconds(600), // Longer timeout for recursive process
+        memorySize: 1024,
+        environment: {
+          ENV: props.envName,
+          PROJECT_NAME: props.projectName,
+          DEEP_RESEARCH_AGENT_ID: "deepResearchAgentId",
+          DEEP_RESEARCH_AGENT_ALIAS_ID: "deepResearchAgentAliasId",
+          SEARCH_WEB_AGENT_ID: "searchWebAgentId",
+          SEARCH_WEB_AGENT_ALIAS_ID: "searchWebAgentAliasId",
+        },
+      }
+    );
+    deepResearchOrchestrationTool.addToRolePolicy(
+      new PolicyStatement({
+        effect: Effect.ALLOW,
+        actions: ["bedrock:InvokeAgent"],
+        resources: ["*"], // Consider restricting to specific agent ARNs
+      })
+    );
 
     // Agent
     const bedrockAgentRole = new Role(this, "MakeReportBedrockAgentRole", {
@@ -85,6 +112,20 @@ export class HypervisorAgent extends Construct {
           actionGroupName: "UserInput",
           parentActionGroupSignature: "AMAZON.UserInput",
         },
+        {
+          actionGroupName: "deepResearchOrchestration",
+          actionGroupExecutor: {
+            lambda: deepResearchOrchestrationTool.functionArn,
+          },
+          apiSchema: {
+            s3: {
+              s3BucketName: schema.deployedBucket.bucketName,
+              s3ObjectKey: "api-schema/deep-research-orchestration.json", // Create this schema
+            },
+          },
+          description:
+            "Orchestrate deep research by coordinating DeepResearchAgent and SearchWebAgent",
+        },
       ],
       agentResourceRoleArn: bedrockAgentRole.roleArn,
       idleSessionTtlInSeconds: 3600,
@@ -98,8 +139,7 @@ export class HypervisorAgent extends Construct {
 3. 結果をユーザーに提供
 
 ### レポート作成の要望に対して、MakeReportAgent使って最後にレポート作る
-### Deep Researchの要望に対して、まずのDeepResearchAgent使って、クエリセットを作り、その後ウェブ検索して、結果をユーザーに返す
-
+### Deep Researchの要望に対して、DeepResearchOrchestrationToolを使用してリサーチを実行
 
 ## 利用可能なAIAgents
 
@@ -126,9 +166,11 @@ export class HypervisorAgent extends Construct {
 スライド3の内容)]
     * backgroundColor: [説明: スライドのbackgroundカラーコード, F0FFFF, fffaf0, ffffffなど、適当に淡い色を使う]
 
-名前: DeepResearchAgent
-- deep Researchするためのクエリセットを作るエージェント
-   - ユーザー入力をそのまま渡す
+名前: DeepResearchOrchestrationTool
+- 複雑なリサーチプロセスを自動化するツールです。DeepResearchAgentとSearchWebAgentを内部で連携させ、包括的な調査結果を提供します。
+   - 必須パラメータを以下の形式で含める:
+     * query: [説明: 調査したいトピックやリサーチクエリ]
+     * max_iterations: [説明: 最大調査ループ回数（デフォルト: 3）。オプション]
 
 名前: SearchWebAgent
 - ウェブ検索用ツール管理エージェント、必要な回数に応じて複数回呼び出せる
@@ -141,10 +183,9 @@ export class HypervisorAgent extends Construct {
 
 ユーザー入力: これからの日本米の値段変化知りたい、DeepResearch使用する。
 実行方法: 
-   - まず、ユーザーの入力に対して、DeepResearchAgent使って、クエリセットを生成する。
-   - そしてそのクエリたちの結果を得るために、SearchWebAgentをクエリの回数だけ使用する。
-   - 例えばqueriesの配下にオブジェクト三つ存在すれば、SearchWebAgentを三回呼び出す。
-   - 検索結果と最終判断をユーザーに返す。
+   - DeepResearchOrchestrationToolを使用して、クエリ「これからの日本米の値段変化」を実行します。
+   - ツールは内部でDeepResearchAgentとSearchWebAgentを適切に連携させ、検索結果と分析を提供します。
+   - 検索結果と最終判断をユーザーに返します。
 
 DO NOT TALK JUST GENERATE ANSWER
       `,
