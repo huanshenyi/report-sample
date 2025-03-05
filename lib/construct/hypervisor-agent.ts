@@ -52,31 +52,31 @@ export class HypervisorAgent extends Construct {
     /*
      * Action Group Lambda
      */
-    const deepResearchOrchestrationTool = new NodejsFunction(
-      this,
-      "DeepResearchOrchestrationTool",
-      {
-        runtime: Runtime.NODEJS_22_X,
-        entry: "./lambda/deep-research-orchestration-tool.ts", // Implement this file with the logic above
-        timeout: Duration.seconds(600), // Longer timeout for recursive process
-        memorySize: 1024,
-        environment: {
-          ENV: props.envName,
-          PROJECT_NAME: props.projectName,
-          DEEP_RESEARCH_AGENT_ID: "deepResearchAgentId",
-          DEEP_RESEARCH_AGENT_ALIAS_ID: "deepResearchAgentAliasId",
-          SEARCH_WEB_AGENT_ID: "searchWebAgentId",
-          SEARCH_WEB_AGENT_ALIAS_ID: "searchWebAgentAliasId",
-        },
-      }
-    );
-    deepResearchOrchestrationTool.addToRolePolicy(
-      new PolicyStatement({
-        effect: Effect.ALLOW,
-        actions: ["bedrock:InvokeAgent"],
-        resources: ["*"], // Consider restricting to specific agent ARNs
-      })
-    );
+    // const deepResearchOrchestrationTool = new NodejsFunction(
+    //   this,
+    //   "DeepResearchOrchestrationTool",
+    //   {
+    //     runtime: Runtime.NODEJS_22_X,
+    //     entry: "./lambda/deep-research-orchestration-tool.ts", // Implement this file with the logic above
+    //     timeout: Duration.seconds(600), // Longer timeout for recursive process
+    //     memorySize: 1024,
+    //     environment: {
+    //       ENV: props.envName,
+    //       PROJECT_NAME: props.projectName,
+    //       DEEP_RESEARCH_AGENT_ID: "deepResearchAgentId",
+    //       DEEP_RESEARCH_AGENT_ALIAS_ID: "deepResearchAgentAliasId",
+    //       SEARCH_WEB_AGENT_ID: "searchWebAgentId",
+    //       SEARCH_WEB_AGENT_ALIAS_ID: "searchWebAgentAliasId",
+    //     },
+    //   }
+    // );
+    // deepResearchOrchestrationTool.addToRolePolicy(
+    //   new PolicyStatement({
+    //     effect: Effect.ALLOW,
+    //     actions: ["bedrock:InvokeAgent"],
+    //     resources: ["*"], // Consider restricting to specific agent ARNs
+    //   })
+    // );
 
     // Agent
     const bedrockAgentRole = new Role(this, "MakeReportBedrockAgentRole", {
@@ -112,20 +112,20 @@ export class HypervisorAgent extends Construct {
           actionGroupName: "UserInput",
           parentActionGroupSignature: "AMAZON.UserInput",
         },
-        {
-          actionGroupName: "deepResearchOrchestration",
-          actionGroupExecutor: {
-            lambda: deepResearchOrchestrationTool.functionArn,
-          },
-          apiSchema: {
-            s3: {
-              s3BucketName: schema.deployedBucket.bucketName,
-              s3ObjectKey: "api-schema/deep-research-orchestration.json", // Create this schema
-            },
-          },
-          description:
-            "Orchestrate deep research by coordinating DeepResearchAgent and SearchWebAgent",
-        },
+        // {
+        //   actionGroupName: "deepResearchOrchestration",
+        //   actionGroupExecutor: {
+        //     lambda: deepResearchOrchestrationTool.functionArn,
+        //   },
+        //   apiSchema: {
+        //     s3: {
+        //       s3BucketName: schema.deployedBucket.bucketName,
+        //       s3ObjectKey: "api-schema/deep-research-orchestration.json", // Create this schema
+        //     },
+        //   },
+        //   description:
+        //     "Orchestrate deep research by coordinating DeepResearchAgent and SearchWebAgent",
+        // },
       ],
       agentResourceRoleArn: bedrockAgentRole.roleArn,
       idleSessionTtlInSeconds: 3600,
@@ -166,11 +166,10 @@ export class HypervisorAgent extends Construct {
 スライド3の内容)]
     * backgroundColor: [説明: スライドのbackgroundカラーコード, F0FFFF, fffaf0, ffffffなど、適当に淡い色を使う]
 
-名前: DeepResearchOrchestrationTool
+名前: DeepResearchAgent
 - 複雑なリサーチプロセスを自動化するツールです。DeepResearchAgentとSearchWebAgentを内部で連携させ、包括的な調査結果を提供します。
    - 必須パラメータを以下の形式で含める:
      * query: [説明: 調査したいトピックやリサーチクエリ]
-     * max_iterations: [説明: 最大調査ループ回数（デフォルト: 3）。オプション]
 
 名前: SearchWebAgent
 - ウェブ検索用ツール管理エージェント、必要な回数に応じて複数回呼び出せる

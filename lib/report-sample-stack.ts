@@ -37,19 +37,19 @@ export class ReportSampleStack extends cdk.Stack {
       knowledgeBaseId: props.ragKnowledgeBaseId,
     });
 
-    // セールス情報を取得できるエージェント(今は店舗、今後色々対応予定)
-    const salesSurveyAgent = new SalesSurveyAgent(this, "SalesSurveyAgent", {
-      envName: props.envName,
-      projectName: props.projectName,
-      knowledgeBaseId: props.ragKnowledgeBaseId,
-    });
+    // // セールス情報を取得できるエージェント(今は店舗、今後色々対応予定)
+    // const salesSurveyAgent = new SalesSurveyAgent(this, "SalesSurveyAgent", {
+    //   envName: props.envName,
+    //   projectName: props.projectName,
+    //   knowledgeBaseId: props.ragKnowledgeBaseId,
+    // });
 
-    // 制作物を作るエージェント(今はパワポ、今後pdfなどを対応予定)
-    const makeReportAgent = new MakeReportAgent(this, "MakeReportAgent", {
-      envName: props.envName,
-      projectName: props.projectName,
-      knowledgeBaseId: props.ragKnowledgeBaseId,
-    });
+    // // 制作物を作るエージェント(今はパワポ、今後pdfなどを対応予定)
+    // const makeReportAgent = new MakeReportAgent(this, "MakeReportAgent", {
+    //   envName: props.envName,
+    //   projectName: props.projectName,
+    //   knowledgeBaseId: props.ragKnowledgeBaseId,
+    // });
 
     /*
      * ハイパーバイザーエージェント
@@ -63,8 +63,8 @@ export class ReportSampleStack extends cdk.Stack {
 
     this.agents = [
       ...deepResearchAgent.agents,
-      ...salesSurveyAgent.agents,
-      ...makeReportAgent.agents,
+      // ...salesSurveyAgent.agents,
+      // ...makeReportAgent.agents,
       ...hypervisorAgent.agents,
       ...searchWebAgent.agents,
     ];
